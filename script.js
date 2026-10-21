@@ -1,5 +1,32 @@
 const delivery = document.querySelector('#delivery');
 const letter = document.querySelector('#letter');
+const transmission = document.querySelector('#transmission');
+const message = transmission.textContent;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const cipher = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&/';
+let revealFrame;
+function revealTransmission(start) {
+  if (reducedMotion.matches) {
+    transmission.textContent = message;
+    return;
+  }
+  const progress = Math.min((performance.now() - start) / 2200, 1);
+  const resolved = Math.floor(progress * message.length);
+  transmission.textContent = Array.from(message, (character, index) => {
+    if (index < resolved || /\s|[.,]/.test(character)) return character;
+    return cipher[Math.floor(Math.random() * cipher.length)];
+  }).join('');
+  if (progress < 1) {
+    revealFrame = requestAnimationFrame(() => revealTransmission(start));
+  }
+}
+reducedMotion.addEventListener('change', () => {
+  if (reducedMotion.matches) {
+    cancelAnimationFrame(revealFrame);
+    transmission.textContent = message;
+  }
+});
+revealTransmission(performance.now());
 document.querySelector('#open').addEventListener('click', () => {
   delivery.hidden = true;
   letter.hidden = false;
